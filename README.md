@@ -26,7 +26,7 @@ import Traceback
 /* ... */
 lazy var traceback: TracebackSDK = {
     let config = TracebackConfiguration(
-        mainAssociatedHost: "https://my-firebase-project-traceback.firebaseapp.com",
+        mainAssociatedHost: URL("https://my-firebase-project-traceback.firebaseapp.com")!,
         useClipboard: true,
         logLevel: .error
     )
@@ -48,7 +48,15 @@ struct PreLandingView: View {
         .onAppear {
             Task {
                 // 1.- Search for post-install link and proceed if available
-                guard let tracebackURL = traceback.postInstallSearchLink()?.url else {
+                var clipboardURL = UIPasteboard.general.url
+                let darkLaunchFirebaseDL = DynamicLinks.dynamicLinks().dynamicLink(fromCustomSchemeURL: url)
+
+                let darkLaunchInfo = DarkLaunchInfo(
+                    darkLaunchDetectedLink: darkLaunchFirebaseDL?.url,
+                    previouslyGrabbedClipboard: clipboardURL
+                )
+
+                guard let tracebackURL = traceback.postInstallSearchLink(nil)?.url else {
                     return
                 }
                 proceed(onOpenURL: tracebackURL)
@@ -66,7 +74,7 @@ struct PreLandingView: View {
         // 2.- Grab the correct url
         //  URL is either a post-install link (detected after app download on onAppear above),
         //  or an opened url (direct open in installed app)
-        guard let linkResult = try? traceback.extractLinkFromURL(url) else {
+        guard let linkResult = try? traceback.extractLinkFromURL(url)?.url else {
             return assertionFailure("Could not find a valid traceback/universal url in \(url)")
         }
         
