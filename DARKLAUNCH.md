@@ -58,7 +58,7 @@ final class PreLandingViewModel: ObservableObject {
             // 3.- Grab the correct url
             //  URL is either a post-install link (detected after app download on onAppear),
             //  or an opened url (direct open in installed app)
-            guard let linkResult = try? traceback.extractLinkFromURL(url) else {
+            guard let linkResult = try? traceback.extractLinkFromURL(url)?.url else {
                 return assertionFailure("Could not find a valid traceback/universal url in \(url)")
             }
             
