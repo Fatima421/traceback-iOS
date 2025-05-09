@@ -90,7 +90,15 @@ class YourAppDelegate: NSObject, UIApplicationDelegate {
         Task {
             // 1.- Trigger a search for installation links
             //  if a link is found successfully, it will be sent to proceed(openURL:) below
-            guard let tracebackURL = traceback.postInstallSearchLink()?.url else {
+            var clipboardURL = UIPasteboard.general.url
+            let darkLaunchFirebaseDL = DynamicLinks.dynamicLinks().dynamicLink(fromCustomSchemeURL: url)
+
+            let darkLaunchInfo = DarkLaunchInfo(
+                darkLaunchDetectedLink: darkLaunchFirebaseDL?.url,
+                previouslyGrabbedClipboard: clipboardURL
+            )
+
+            guard let tracebackURL = traceback.postInstallSearchLink(darkLaunchInfo)?.url else {
                 return
             }
             proceed(onOpenURL: tracebackURL)
@@ -116,7 +124,7 @@ class YourAppDelegate: NSObject, UIApplicationDelegate {
         // 2.- Grab the correct url
         //  URL is either a post-install link (detected after app launch above),
         //  or an opened url (direct open in installed app)
-        guard let linkResult = try? traceback.extractLinkFromURL(url) else {
+        guard let linkResult = try? traceback.extractLinkFromURL(url)?.url else {
             return assertionFailure("Could not find a valid traceback/universal url in \(url)")
         }
         
@@ -134,4 +142,3 @@ firebase dynamic links and Traceback, final decision will be based on firebase d
 links.
 
 Check [Dark Launch Guide](DARKLAUNCH.md).
-
